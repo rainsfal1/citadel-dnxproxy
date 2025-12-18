@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "dnsproxy config",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["Logfile", "ListenAddress", "DefaultRule", "OnErrorRule", "NameServers", "Router"],
+  "properties": {
+    "Logfile": { "type": "string", "minLength": 1 },
+    "ListenAddress": { "type": "string", "minLength": 1 },
+    "DefaultRule": { "$ref": "#/definitions/ActionTypeNonNone" },
+    "OnErrorRule": { "$ref": "#/definitions/ActionTypeNonNone" },
+    "BlockStrategy": { "$ref": "#/definitions/BlockStrategy" },
+    "IPv4BlockResolve": { "type": "string" },
+    "IPv6BlockResolve": { "type": "string" },
+    "NameServers": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/NameServer" }
+    },
+    "Router": { "$ref": "#/definitions/Router" },
+    "Hosts": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Host" }
+    },
+    "Resolve": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/ResolveHost" }
+    },
+    "Domains": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Domain" }
+    },
+    "StaticDevices": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/StaticDevice" }
+    }
+  },
+  "definitions": {
+    "ActionType": {
+      "type": "string",
+      "enum": [
+        "ActionTypeNone",
+        "ActionTypePass",
+        "ActionTypeBlockedDevice",
+        "ActionTypeBlockedSiteBan",
+        "ActionTypeBlockedTimeSpan"
+      ]
+    },
+    "ActionTypeNonNone": {
+      "type": "string",
+      "enum": [
+        "ActionTypePass",
+        "ActionTypeBlockedDevice",
+        "ActionTypeBlockedSiteBan",
+        "ActionTypeBlockedTimeSpan"
+      ]
+    },
+    "RouterType": {
+      "type": "string",
+      "enum": ["RouterTypeNone", "RouterTypeNetGear", "RouterTypeUnifi"]
+    },
+    "NameServer": {
+      "type": "object",
+      "required": ["IP"],
+      "additionalProperties": false,
+      "properties": {
+        "IP": { "type": "string", "minLength": 1 }
+      }
+    },
+    "Router": {
+      "type": "object",
+      "required": ["Engine"],
+      "additionalProperties": false,
+      "properties": {
+        "Engine": { "$ref": "#/definitions/RouterType" },
+        "Host": { "type": "string" },
+        "Port": { "type": "string" },
+        "User": { "type": "string" },
+        "Password": { "type": "string" },
+        "PollChanges": { "type": "boolean" },
+        "PollInterval": { "type": "integer", "minimum": 0 },
+        "TimeoutSec": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "Host": {
+      "type": "object",
+      "required": ["Name", "Rules"],
+      "additionalProperties": false,
+      "properties": {
+        "Name": { "type": "string", "minLength": 1 },
+        "Rules": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Rule" }
+        }
+      }
+    },
+    "ResolveHost": {
+      "type": "object",
+      "required": ["Name", "IpV4"],
+      "additionalProperties": false,
+      "properties": {
+        "Name": { "type": "string", "minLength": 1 },
+        "IpV4": { "type": "string", "format": "ipv4" },
+        "IpV6": { "type": "string", "format": "ipv6" }
+      }
+    },
+    "Domain": {
+      "type": "object",
+      "required": ["Name", "Hosts"],
+      "additionalProperties": false,
+      "properties": {
+        "Name": { "type": "string", "minLength": 1 },
+        "Hosts": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Host" }
+        }
+      }
+    },
+    "Rule": {
+      "type": "object",
+      "required": ["Type"],
+      "additionalProperties": false,
+      "properties": {
+        "Type": { "$ref": "#/definitions/ActionType" },
+        "TimeSpan": {
+          "type": "string",
+          "pattern": "^[0-9]{2}:[0-9]{2}-[0-9]{2}:[0-9]{2}$"
+        }
+      }
+    },
+    "StaticDevice": {
+      "type": "object",
+      "required": ["Name", "IP"],
+      "additionalProperties": false,
+      "properties": {
+        "Name": { "type": "string", "minLength": 1 },
+        "IP": { "type": "string", "format": "ipv4" },
+        "MAC": { "type": "string" }
+      }
+    },
+    "BlockStrategy": {
+      "type": "object",
+      "required": ["Action"],
+      "additionalProperties": false,
+      "properties": {
+        "Action": {
+          "type": "string",
+          "enum": ["nxdomain", "refuse", "nullroute", "sinkhole"]
+        },
+        "SinkholeIPv4": { "type": "string" },
+        "SinkholeIPv6": { "type": "string" }
+      }
+    }
+  }
+}

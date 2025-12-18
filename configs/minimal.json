@@ -1,0 +1,39 @@
+{
+  "Logfile": "-",
+  "ListenAddress": ":2053",
+  "DefaultRule": "ActionTypePass",
+  "OnErrorRule": "ActionTypeBlockedSiteBan",
+  "BlockStrategy": {
+    "Action": "nullroute"
+  },
+  "NameServers": [
+    { "IP": "8.8.8.8:53" },
+    { "IP": "1.1.1.1:53" }
+  ],
+  "Router": {
+    "Engine": "RouterTypeNone"
+  },
+  "Hosts": [
+    {
+      "Name": "127.0.0.1",
+      "Rules": [
+        { "Type": "ActionTypeBlockedDevice" }
+      ]
+    }
+  ],
+  "Domains": [
+    {
+      "Name": "*.blocked.test",
+      "Hosts": [
+        {
+          "Name": "*",
+          "Rules": [
+            { "Type": "ActionTypeBlockedDevice" }
+          ]
+        }
+      ]
+    }
+  ],
+  "Resolve": [],
+  "StaticDevices": []
+}

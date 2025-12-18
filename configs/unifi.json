@@ -1,0 +1,47 @@
+{
+  "Logfile": "-",
+  "ListenAddress": ":2053",
+  "DefaultRule": "ActionTypePass",
+  "OnErrorRule": "ActionTypeBlockedSiteBan",
+  "BlockStrategy": {
+    "Action": "nxdomain"
+  },
+  "NameServers": [
+    { "IP": "8.8.8.8:53" },
+    { "IP": "1.1.1.1:53" }
+  ],
+  "Router": {
+    "Engine": "RouterTypeUnifi",
+    "Host": "192.168.1.1",
+    "Port": "8443",
+    "User": "unifi-user",
+    "Password": "changeme",
+    "PollChanges": true,
+    "PollInterval": 30,
+    "TimeoutSec": 10
+  },
+  "Hosts": [
+    {
+      "Name": "kids-tablet",
+      "Rules": [
+        { "Type": "ActionTypePass", "TimeSpan": "16:00-19:00" },
+        { "Type": "ActionTypeBlockedDevice" }
+      ]
+    }
+  ],
+  "Domains": [
+    {
+      "Name": "*.social.test",
+      "Hosts": [
+        {
+          "Name": "*",
+          "Rules": [
+            { "Type": "ActionTypeBlockedDevice" }
+          ]
+        }
+      ]
+    }
+  ],
+  "Resolve": [],
+  "StaticDevices": []
+}

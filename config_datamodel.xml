@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doc namespace="main">
+
+    <define type="enum" name="ActionType">
+        <int name="ActionTypeNone" value="0"/>
+        <int name="ActionTypePass" value="1"/>
+        <int name="ActionTypeBlockedDevice" value="2"/>
+        <int name="ActionTypeBlockedSiteBan" value="3"/>
+        <int name="ActionTypeBlockedTimeSpan" value="4"/>
+    </define>    
+
+    <define type="enum" name="RouterType">
+        <int name="RouterTypeNone" value="0"/>
+        <int name="RouterTypeNetGear" value="1"/>
+        <int name="RouterTypeUnifi" value="2"/>
+    </define>    
+
+    <define type="class" name="Config">
+        <field type="string" name="Logfile" />
+        <field type="Router" name="Router" />
+        <field type="string" name="ListenAddress" />
+        <field islist="true" type="NameServer" name="NameServers" />
+        <field type="ActionType" name="DefaultRule" />
+        <field type="ActionType" name="OnErrorRule" />
+        <field type="string" name="IPv4BlockResolve" />
+        <field type="string" name="IPv6BlockResolve" />
+        <field islist="true" type="Host" name="Hosts"/>
+        <field islist="true" type="Host" name="Resolve"/>
+        <field islist="true" type="Domain" name="Domains"/>
+    </define>
+
+    <define type="class" name="Router">
+        <field type="string" name="Host" />
+        <field type="string" name="Port" />
+        <field type="string" name="User" />
+        <field type="string" name="Password" />
+        <field type="RouterType" name="Engine" />
+        <field type="bool" name="PollChanges" />
+        <field type="int" name="PollInterval" />
+        <field type="int" name="TimeoutSec" default="10" />
+    </define>
+
+    <define type="class" name="NameServer">
+        <field type="string" name="IP" />
+    </define>
+
+    <define type="class" name="Domain">
+        <field type="string" name="Name" />
+        <field islist="true" type="Host" name="Hosts" />
+    </define>
+
+    <define type="class" name="Host">
+        <field type="string" name="Name" />
+        <field type="string" name="IpV4" />
+        <field islist="true" type="Rule" name="Rules" />
+    </define>
+
+    <define type="class" name="Rule">
+        <field type="ActionType" name="Type" />
+        <field type="string" name="TimeSpan" />
+    </define>
+
+   
+</doc>

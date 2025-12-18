@@ -1,0 +1,43 @@
+{
+  "Logfile": "-",
+  "ListenAddress": ":2053",
+  "DefaultRule": "ActionTypePass",
+  "OnErrorRule": "ActionTypeBlockedSiteBan",
+  "BlockStrategy": {
+    "Action": "nullroute"
+  },
+  "NameServers": [
+    { "IP": "8.8.8.8:53" },
+    { "IP": "1.1.1.1:53" }
+  ],
+  "Router": {
+    "Engine": "RouterTypeNone"
+  },
+  "StaticDevices": [
+    { "Name": "nagini", "IP": "192.168.1.8" },
+    { "Name": "kids-phone", "IP": "192.168.1.50" }
+  ],
+  "Hosts": [
+    {
+      "Name": "kids-phone",
+      "Rules": [
+        { "Type": "ActionTypePass", "TimeSpan": "15:00-18:00" },
+        { "Type": "ActionTypeBlockedDevice" }
+      ]
+    }
+  ],
+  "Domains": [
+    {
+      "Name": "*.games.test",
+      "Hosts": [
+        {
+          "Name": "*",
+          "Rules": [
+            { "Type": "ActionTypeBlockedDevice" }
+          ]
+        }
+      ]
+    }
+  ],
+  "Resolve": []
+}

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Citadel Admin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Citadel Admin</h1>
+  </header>
+  <div class="page">
+    <main class="container">
+      <section id="auth" class="panel panel-login">
+        <h2>Login</h2>
+        <div class="col">
+          <input id="username" type="text" placeholder="Username" value="admin">
+          <input id="password" type="password" placeholder="First-boot secret or password">
+          <button id="loginBtn">Login</button>
+        </div>
+        <div id="authStatus" class="auth-error hidden"></div>
+        <p id="hintDefault" class="hint hidden">First boot: use printed secret from logs; default legacy: admin/admin</p>
+      </section>
+
+      <section id="actions" class="hidden">
+        <div class="content-wrapper">
+          <div class="top-toolbar">
+            <div class="toolbar-left">
+              <button id="getStartedBtn" class="ghost">Get Started</button>
+            </div>
+            <div class="settings-menu">
+              <button id="settingsBtn" class="icon-btn" title="Settings">⚙</button>
+              <div id="settingsDropdown" class="dropdown hidden">
+                <button id="changePasswordBtn">Change Password</button>
+                <button id="logoutBtn">Logout</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="statusBar" class="status hidden"></div>
+
+          <div class="dashboard">
+          <!-- First Row: Three Tables -->
+          <div class="dash-row three-col">
+            <div class="tile">
+              <h3>Devices</h3>
+              <ul id="deviceList" class="data-list"></ul>
+            </div>
+
+            <div class="tile">
+              <h3>Users</h3>
+              <ul id="userList" class="data-list"></ul>
+            </div>
+
+            <div class="tile">
+              <h3>Domain Rules</h3>
+              <ul id="rulesList" class="data-list"></ul>
+            </div>
+          </div>
+
+          <!-- Action Buttons Row -->
+          <div class="action-buttons">
+            <button id="addDeviceBtn" class="action-btn">Add Device</button>
+            <button id="addUserBtn" class="action-btn">Add User</button>
+            <button id="addRuleBtn" class="action-btn">Add Rule</button>
+          </div>
+
+          <!-- Active Sessions (Full Width) -->
+          <div class="tile wide">
+            <div class="tile-header">
+              <h3>Active Sessions</h3>
+              <button id="refreshBtn" class="ghost small">Refresh</button>
+            </div>
+            <table id="sessionTable">
+              <thead><tr><th>User</th><th>Device IDs</th><th>Usage (sec)</th><th>Budget (sec)</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Get Started Modal -->
+  <div id="getStartedModal" class="modal hidden">
+    <div class="modal-content large">
+      <button class="modal-close" onclick="document.getElementById('getStartedModal').classList.add('hidden')">×</button>
+      <h3>Getting Started with Citadel</h3>
+      <div class="wizard-steps">
+        <div class="step">
+          <h4>1) Set Admin Password</h4>
+          <p>Change your admin password in Settings (gear icon) after first login.</p>
+        </div>
+        <div class="step">
+          <h4>2) Confirm DNS</h4>
+          <p>Make sure this box answers DNS on the LAN.</p>
+          <p>Default bind: <strong><code id="bindHintModal">127.0.0.1:8081</code></strong></p>
+          <p>Test: <code>nslookup example.com &lt;box-ip&gt;</code></p>
+        </div>
+        <div class="step">
+          <h4>3) Point DHCP DNS to This Box</h4>
+          <p>On your router, set the LAN DNS server to the IP above.</p>
+          <p><strong>Do not expose this UI to WAN.</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Device Modal -->
+  <div id="addDeviceModal" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close" onclick="document.getElementById('addDeviceModal').classList.add('hidden')">×</button>
+      <h3 id="deviceModalTitle">Add Device</h3>
+      <div class="dropdown-field">
+        <label for="discoverySearch">LAN devices</label>
+        <input id="discoverySearch" placeholder="Search LAN devices">
+        <div id="discoveryList" class="scroll-list tall"></div>
+      </div>
+      <button id="showManualBtn" class="ghost small">Want to add manually?</button>
+      <div id="manualDeviceForm" class="stack hidden">
+        <input id="devName" placeholder="Device Name">
+        <input id="devIP" placeholder="IP Address (optional)">
+        <input id="devMAC" placeholder="MAC Address (optional)">
+        <input id="devUser" placeholder="User ID to assign (optional)">
+        <button id="createDeviceBtn">Save Device</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Device Modal -->
+  <div id="viewDeviceModal" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close" onclick="document.getElementById('viewDeviceModal').classList.add('hidden')">×</button>
+      <h3>Device Details</h3>
+      <div id="deviceDetails" style="text-align: left; line-height: 2;">
+        <p><strong>Name:</strong> <span id="viewDevName"></span></p>
+        <p><strong>IP Address:</strong> <span id="viewDevIP"></span></p>
+        <p><strong>MAC Address:</strong> <span id="viewDevMAC"></span></p>
+        <p><strong>User ID:</strong> <span id="viewDevUser"></span></p>
+        <p><strong>Last Seen:</strong> <span id="viewDevLastSeen"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add User Modal -->
+  <div id="addUserModal" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close" onclick="document.getElementById('addUserModal').classList.add('hidden')">×</button>
+      <h3 id="userModalTitle">Create User</h3>
+      <input id="userName" placeholder="User Name">
+      <input id="userBudget" type="number" placeholder="Daily Budget (minutes)" value="60">
+      <textarea id="userAllow" placeholder="Allow Windows (e.g., 09:00-17:00, 19:00-22:00)"></textarea>
+      <div class="dropdown-field">
+        <label for="userDeviceSelect">Assign device (optional)</label>
+        <input id="userDeviceSearch" placeholder="Search devices">
+        <div id="userDeviceSelect" class="scroll-list"></div>
+      </div>
+      <button id="createUserBtn">Create User</button>
+    </div>
+  </div>
+
+  <!-- Add Rule Modal -->
+  <div id="addRuleModal" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close" onclick="document.getElementById('addRuleModal').classList.add('hidden')">×</button>
+      <h3 id="ruleModalTitle">Add Domain Rule</h3>
+      <input id="ruleUser" placeholder="User ID">
+      <input id="rulePattern" placeholder="Pattern (e.g., *.example.com)">
+      <select id="ruleAction">
+        <option value="block">Block</option>
+        <option value="allow">Allow</option>
+      </select>
+      <button id="createRuleBtn">Add Rule</button>
+    </div>
+  </div>
+
+  <!-- View Rule Modal -->
+  <div id="viewRuleModal" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close" onclick="document.getElementById('viewRuleModal').classList.add('hidden')">×</button>
+      <h3>Rule Details</h3>
+      <div style="text-align: left; line-height: 2;">
+        <p><strong>Pattern:</strong> <span id="viewRulePattern"></span></p>
+        <p><strong>Action:</strong> <span id="viewRuleAction"></span></p>
+        <p><strong>User:</strong> <span id="viewRuleUser"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Password Modal (first boot) -->
+  <div id="modalOverlay" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close" onclick="hideModal()">×</button>
+      <h3>Change Admin Password</h3>
+      <p>Set a new admin password (minimum 6 characters).</p>
+      <input id="modalPassword" type="password" placeholder="New Password">
+      <button id="modalSaveBtn">Save Password</button>
+    </div>
+  </div>
+
+  <!-- Password Change Form (in settings) -->
+  <div id="passwordModal" class="modal hidden">
+    <div class="modal-content">
+      <button class="modal-close" onclick="document.getElementById('passwordModal').classList.add('hidden')">×</button>
+      <h3>Change Password</h3>
+      <input id="newPassword" type="password" placeholder="New Password (min 6 chars)">
+      <button id="setPwdBtn">Update Password</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
