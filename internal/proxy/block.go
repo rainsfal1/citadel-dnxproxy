@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"log"
 	"net"
 	"strings"
 
@@ -18,6 +19,8 @@ func buildBlockedResponse(conf *cfg.Config, message *dns.Msg, q dns.Question, IP
 		strategy = "nullroute"
 	}
 
+	log.Printf("[BLOCK] Blocking %s with strategy: %s", q.Name, strategy)
+
 	// Rcodes for non-address strategies
 	switch strategy {
 	case "nxdomain":
@@ -34,7 +37,18 @@ func buildBlockedResponse(conf *cfg.Config, message *dns.Msg, q dns.Question, IP
 		ipv4 = conf.IPv4BlockResolve
 	}
 	if ipv4 == "" {
-		ipv4 = "0.0.0.0"
+		// Auto-detect server's private IP for sinkhole redirection
+		if strategy == "sinkhole" {
+			if serverIP := firstPrivateIPv4(); serverIP != "" {
+				ipv4 = serverIP
+				log.Printf("[BLOCK] Auto-detected sinkhole IP: %s", ipv4)
+			} else {
+				ipv4 = "0.0.0.0"
+				log.Printf("[BLOCK] WARNING: No private IP found, using 0.0.0.0 (won't work!)")
+			}
+		} else {
+			ipv4 = "0.0.0.0"
+		}
 	}
 	ipv6 := conf.BlockStrategy.SinkholeIPv6
 	if ipv6 == "" {
@@ -46,6 +60,7 @@ func buildBlockedResponse(conf *cfg.Config, message *dns.Msg, q dns.Question, IP
 
 	switch IPQuery {
 	case _IP4Query:
+		log.Printf("[BLOCK] Returning sinkhole IPv4: %s for %s", ipv4, q.Name)
 		rrHeader := dns.RR_Header{
 			Name:   q.Name,
 			Rrtype: dns.TypeA,

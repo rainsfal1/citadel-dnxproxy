@@ -145,7 +145,10 @@ func (m *Manager) merge(records []device.DeviceRecord) error {
 				dev.Vendor = rec.Vendor
 			}
 			if rec.Source != "" {
-				dev.Source = string(rec.Source)
+				// Preserve explicit/manual sources so the device stays user-managed.
+				if dev.Source == "" || (dev.Source != "manual" && dev.Source != "static") {
+					dev.Source = string(rec.Source)
+				}
 			}
 			if rec.IP != nil {
 				dev.IP = rec.IP.String()

@@ -5,6 +5,7 @@ import (
 	"context"
 	"net"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -58,8 +59,8 @@ func (p *arpProvider) Name() string { return "arp" }
 func (p *arpProvider) Discover(ctx context.Context) ([]device.DeviceRecord, error) {
 	f, err := os.Open("/proc/net/arp")
 	if err != nil {
-		// Non-Linux platforms simply skip ARP discovery.
-		return nil, nil
+		// Non-Linux platforms can fall back to arp -an (e.g., macOS).
+		return discoverFromARPCommand()
 	}
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
@@ -88,6 +89,60 @@ func (p *arpProvider) Discover(ctx context.Context) ([]device.DeviceRecord, erro
 		})
 	}
 	return records, nil
+}
+
+func discoverFromARPCommand() ([]device.DeviceRecord, error) {
+	out, err := exec.Command("arp", "-an").Output()
+	if err != nil {
+		return nil, nil
+	}
+	lines := strings.Split(string(out), "\n")
+	now := time.Now()
+	var records []device.DeviceRecord
+	for _, line := range lines {
+		ip, mac, ok := parseDarwinARPLine(line)
+		if !ok {
+			continue
+		}
+		records = append(records, device.DeviceRecord{
+			IP:       ip,
+			MAC:      mac,
+			Hostname: strings.ToLower(ip.String()),
+			Source:   device.SourceARP,
+			LastSeen: now,
+		})
+	}
+	return records, nil
+}
+
+func parseDarwinARPLine(line string) (net.IP, net.HardwareAddr, bool) {
+	if !strings.Contains(line, "(") || !strings.Contains(line, ")") {
+		return nil, nil, false
+	}
+	start := strings.Index(line, "(")
+	end := strings.Index(line[start:], ")")
+	if end <= 1 {
+		return nil, nil, false
+	}
+	ipStr := strings.TrimSpace(line[start+1 : start+end])
+	ip := net.ParseIP(ipStr)
+	if ip == nil {
+		return nil, nil, false
+	}
+	fields := strings.Fields(line)
+	for i := 0; i < len(fields)-1; i++ {
+		if fields[i] == "at" {
+			if fields[i+1] == "<incomplete>" {
+				return nil, nil, false
+			}
+			mac, err := net.ParseMAC(fields[i+1])
+			if err != nil {
+				return nil, nil, false
+			}
+			return ip, mac, true
+		}
+	}
+	return nil, nil, false
 }
 
 type staticProvider struct {

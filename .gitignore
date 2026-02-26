@@ -3,3 +3,19 @@ dnsproxy
 config.json
 frontend/.cache/
 bin/
+
+# citadel-web
+citadel-web/node_modules/
+citadel-web/.next/
+citadel-web/out/
+citadel-web/build/
+citadel-web/.env*
+citadel-web/.vercel/
+
+# Root caches and artifacts
+.cache/
+.DS_Store
+data/dns.log
+data/*.db
+data/.DS_Store
+dnsproxy-rv

@@ -31,18 +31,15 @@ func New(conf *cfg.Config, deviceCache *dev.DeviceCache) *Resolver {
 
 func (r *Resolver) Resolve(domain string) (string, error) {
 	for _, r := range r.conf.Resolve {
-		log.Printf("testing: %s", r.Name)
 		if utils.WildcardPatternMatch(strings.ToLower(domain), strings.ToLower(r.Name)) {
 			return r.IpV4, nil
 		}
 	}
 
 	if r.deviceCache != nil {
-		log.Printf("Resolve with device cache")
 		domain = strings.TrimSuffix(domain, ".")
 		ip, err := r.deviceCache.NameToIP(domain)
 		if err != nil {
-			log.Printf("Name %s not found\n", domain)
 			return "", ErrHostNotFound
 		}
 		return ip.String(), nil

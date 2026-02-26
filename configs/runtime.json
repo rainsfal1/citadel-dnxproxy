@@ -1,0 +1,21 @@
+{
+  "Logfile": "-",
+  "ListenAddress": ":53",
+  "DefaultRule": "ActionTypePass",
+  "OnErrorRule": "ActionTypeBlockedSiteBan",
+  "BlockStrategy": {
+    "Action": "sinkhole",
+    "SinkholeIPv4": "192.168.65.254"
+  },
+  "NameServers": [
+    { "IP": "8.8.8.8:53" },
+    { "IP": "1.1.1.1:53" }
+  ],
+  "Router": {
+    "Engine": "RouterTypeNone"
+  },
+  "Hosts": [],
+  "Domains": [],
+  "Resolve": [],
+  "StaticDevices": []
+}

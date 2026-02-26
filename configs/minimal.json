@@ -1,5 +1,5 @@
 {
-  "Logfile": "-",
+  "Logfile": "data/dns.log",
   "ListenAddress": ":2053",
   "DefaultRule": "ActionTypePass",
   "OnErrorRule": "ActionTypeBlockedSiteBan",

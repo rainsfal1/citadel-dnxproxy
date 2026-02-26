@@ -1,0 +1,193 @@
+@import "tailwindcss";
+
+:root {
+  --background: #6b7c4a;
+  --foreground: #2d3a1f;
+  --cream: #f5f0e1;
+  --cream-dark: #e8e0c8;
+  --olive-dark: #4a5d23;
+  --olive-light: #8b9a6b;
+  --olive-medium: #6b7c4a;
+  --border-dark: #3d4a2a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-mono: var(--font-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-mono), "Courier New", Courier, monospace;
+  image-rendering: pixelated;
+}
+
+/* Pixel art style utilities */
+.pixel-border {
+  border: 3px solid var(--border-dark);
+  box-shadow:
+    4px 4px 0 0 var(--border-dark);
+}
+
+.pixel-border-light {
+  border: 3px solid var(--olive-dark);
+  box-shadow:
+    3px 3px 0 0 var(--olive-dark);
+}
+
+.pixel-button {
+  background: var(--olive-dark);
+  color: var(--cream);
+  border: 3px solid var(--border-dark);
+  box-shadow: 4px 4px 0 0 var(--border-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: bold;
+  transition: all 0.1s ease;
+}
+
+.pixel-button:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 0 var(--border-dark);
+}
+
+.pixel-button:active {
+  transform: translate(4px, 4px);
+  box-shadow: none;
+}
+
+.pixel-card {
+  background: var(--cream);
+  border: 3px solid var(--border-dark);
+  box-shadow: 6px 6px 0 0 var(--border-dark);
+}
+
+.pixel-input {
+  background: var(--cream);
+  border: 2px solid var(--border-dark);
+  color: var(--foreground);
+  font-family: inherit;
+}
+
+.pixel-input::placeholder {
+  color: #6b7c4a;
+}
+
+/* Scanline effect for extra retro feel */
+.scanlines::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.03) 2px,
+      rgba(0, 0, 0, 0.03) 4px);
+  pointer-events: none;
+}
+
+/* Moving checkered pattern animation */
+@keyframes checkerMove {
+  0% {
+    background-position: 0 0;
+  }
+
+  100% {
+    background-position: 80px 0;
+  }
+}
+
+.moving-lines {
+  position: relative;
+}
+
+.moving-lines::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(45deg, rgba(255, 254, 241, 0.025) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 254, 241, 0.025) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 254, 241, 0.025) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 254, 241, 0.025) 75%);
+  background-size: 80px 80px;
+  background-position: 0 0, 0 40px, 40px -40px, -40px 0px;
+  animation: checkerMove 10s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Architecture section helpers */
+.architecture-wrapper {
+  image-rendering: pixelated;
+}
+
+.architecture-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.architecture-item img {
+  display: block;
+
+}
+
+.architecture-vertical-pipe {
+  transform: rotate(180deg) scale(1.5);
+}
+
+.architecture-horizontal-pipe {
+  transform: rotate(90deg) scale(1.5);
+}
+
+.architecture-selected {
+  box-shadow: 0 0 0 4px #3d4a2c;
+}
+
+.architecture-curved-pipe-left {
+  transform: rotate(0deg) translateX(10px) translateY(40px);
+}
+
+.kid-computer {
+  transform: translateX(140px) translateY(30px);
+}
+
+.kid-computer-label {
+  padding: 20px 20px 20px 30px;
+  transform: translateX(130px);
+  
+}
+
+.architecture-horizontal-pipe-container {
+  transform: translateY(-10px);
+  padding: 0 20px;
+}
+
+.architecture-horizontal-pipe{
+  transform: translateX(30px);
+  transform: rotate(90deg)
+}
+
+.citadel-box {
+  transform: translateY(20px);
+  transform: translateX(0px);
+}
+
+/* Hover effect similar to FAQ cards */
+.architecture-wrapper {
+  transition: all 0.1s ease;
+}
+
+
+.architecture-wrapper:hover {
+  transform: translate(2px, -4px);
+  box-shadow: 10px 12px 0px 0px #3D4A2C;
+}

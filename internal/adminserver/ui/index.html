@@ -165,7 +165,12 @@
     <div class="modal-content">
       <button class="modal-close" onclick="document.getElementById('addRuleModal').classList.add('hidden')">×</button>
       <h3 id="ruleModalTitle">Add Domain Rule</h3>
-      <input id="ruleUser" placeholder="User ID">
+      <div class="dropdown-field">
+        <label for="ruleUserSearch">User</label>
+        <input id="ruleUserSearch" placeholder="Search users">
+        <div id="ruleUserSelect" class="scroll-list"></div>
+        <input id="ruleUserId" type="hidden">
+      </div>
       <input id="rulePattern" placeholder="Pattern (e.g., *.example.com)">
       <select id="ruleAction">
         <option value="block">Block</option>

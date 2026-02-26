@@ -1,5 +1,13 @@
-DNS proxy with device- and domain-aware parental controls.
+# Citadel: Advanced DNS Proxy & Parental Controls
 
+Welcome to **Citadel**, your comprehensive DNS proxy service designed with device- and domain-aware parental controls. Citadel empowers families and network administrators to take back control of internet access, offering fine-grained budgeting, time-based windows, and a robust rule engine—all functioning locally without the need for cloud subscriptions. 
+
+With its rich [Web Dashboard](./citadel-web) and configurable policy engine, Citadel bridges the gap between complex router settings and intuitive user control.
+
+![Citadel Architecture](https://img.shields.io/badge/Architecture-Go_%7C_Next.js-blue?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Active_Development-brightgreen?style=flat-square)
+
+---
 ## Quickstart
 - Build: `make build`
 - Validate sample configs: `make validate-config`
@@ -34,6 +42,11 @@ Validate any config against the schema: `make validate-config CONFIG=path/to/con
 - Cross-midnight windows supported (e.g., `22:00-06:00`).
 - Weekdays are optional; timezone defaults to system local but can be set per timespan.
 
-## Development
+## Development & Testing
 - Run tests: `make test`
 - Build binary into `bin/`: `make build`
+
+### Docker Testing Environment
+We extensively test Citadel's core filtering system using containerized environments. By running Citadel within isolated Docker containers, we reliably mock DNS queries, simulate multiple devices (as distinct container IPs), and validate time-based window policies effectively.
+- **Why Docker?** It ensures consistent cross-platform behaviors and helps rigorously evaluate edge-cases corresponding to complex session-budget rules before they hit a local network.
+- See detailed docker-compose configurations in the integration tests suite.

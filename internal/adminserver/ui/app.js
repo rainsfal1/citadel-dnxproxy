@@ -130,6 +130,7 @@ document.getElementById("addUserBtn").onclick = () => {
 
 document.getElementById("addRuleBtn").onclick = () => {
   resetRuleForm();
+  primeUserSelect(window._policyUsers || {}, "");
   document.getElementById("addRuleModal").classList.remove("hidden");
 };
 
@@ -211,9 +212,9 @@ const defaultCreateDevice = document.getElementById("createDeviceBtn").onclick =
 const defaultCreateRule = document.getElementById("createRuleBtn").onclick = async () => {
   try {
     const pattern = document.getElementById("rulePattern").value.trim();
-    const userId = document.getElementById("ruleUser").value.trim();
+    const userId = getSelectedRuleUserId();
     if (!pattern || !userId) {
-      terminalAlert("Pattern and User ID required", true);
+      terminalAlert("Pattern and User required", true);
       return;
     }
     const payload = {
@@ -223,7 +224,7 @@ const defaultCreateRule = document.getElementById("createRuleBtn").onclick = asy
     };
     await api("/domainrules", { method: "POST", body: JSON.stringify(payload) });
     terminalAlert(`Rule saved: ${payload.action.toUpperCase()} ${pattern}`);
-    ["rulePattern", "ruleUser"].forEach((id) => (document.getElementById(id).value = ""));
+    ["rulePattern", "ruleUserSearch", "ruleUserId"].forEach((id) => (document.getElementById(id).value = ""));
     document.getElementById("addRuleModal").classList.add("hidden");
     refreshPolicy();
   } catch (e) {
@@ -237,6 +238,7 @@ async function refreshPolicy() {
   try {
     const data = await api("/policy");
     window._policyDevices = data.devices || {};
+    window._policyUsers = data.users || {};
     renderDevices(data);
     renderUsers(data);
     renderRules(data);
@@ -339,6 +341,63 @@ function renderDiscovery(devicesMap) {
   search.oninput = (e) => {
     render(e.target.value || "");
   };
+}
+
+function primeUserSelect(usersMap, preselectId) {
+  const container = document.getElementById("ruleUserSelect");
+  const search = document.getElementById("ruleUserSearch");
+  const hidden = document.getElementById("ruleUserId");
+  if (!container || !search || !hidden) return;
+  const users = Object.values(usersMap || {}).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+  const applySelection = (id) => {
+    hidden.value = id;
+    const user = users.find((u) => u.id === id);
+    if (user) {
+      search.value = user.name || user.id || "";
+    }
+  };
+
+  if (preselectId) {
+    applySelection(preselectId);
+  }
+
+  const render = (filter) => {
+    container.innerHTML = "";
+    const subset = users.filter((u) => {
+      if (!filter) return true;
+      const text = `${u.name} ${u.id}`.toLowerCase();
+      return text.includes(filter.toLowerCase());
+    });
+    subset.forEach((u) => {
+      const item = document.createElement("div");
+      item.className = "scroll-item spaced";
+      const name = u.name || u.id;
+      const selected = hidden.value === u.id;
+      const btnLabel = selected ? "Selected" : "Use";
+      item.innerHTML = `<div><div class="user-line">${escape(name)}</div><div class="muted">${escape(u.id)}</div></div><button class="icon-plain" data-id="${u.id}" data-action="use">${btnLabel}</button>`;
+      container.appendChild(item);
+    });
+  };
+
+  render("");
+
+  container.onclick = (e) => {
+    const id = e.target.getAttribute && e.target.getAttribute("data-id");
+    if (!id) return;
+    applySelection(id);
+    render(search.value || "");
+  };
+
+  search.oninput = (e) => {
+    render(e.target.value || "");
+  };
+}
+
+function getSelectedRuleUserId() {
+  const hidden = document.getElementById("ruleUserId");
+  if (!hidden) return "";
+  return hidden.value.trim();
 }
 
 function openDeviceView(deviceId, data) {
@@ -564,7 +623,7 @@ function openRuleEdit(ruleId, data) {
   if (!rule) return;
 
   document.getElementById("ruleModalTitle").textContent = "Edit Domain Rule";
-  document.getElementById("ruleUser").value = rule.user_id || "";
+  primeUserSelect(data.users || {}, rule.user_id || "");
   document.getElementById("rulePattern").value = rule.pattern || "";
   document.getElementById("ruleAction").value = rule.action || "block";
 
@@ -576,9 +635,9 @@ function openRuleEdit(ruleId, data) {
   btn.onclick = async () => {
     try {
       const pattern = document.getElementById("rulePattern").value.trim();
-      const userId = document.getElementById("ruleUser").value.trim();
+      const userId = getSelectedRuleUserId();
       if (!pattern || !userId) {
-        terminalAlert("Pattern and User ID required", true);
+        terminalAlert("Pattern and User required", true);
         return;
       }
       const payload = {
@@ -599,7 +658,8 @@ function openRuleEdit(ruleId, data) {
 
 function resetRuleForm() {
   document.getElementById("ruleModalTitle").textContent = "Add Domain Rule";
-  document.getElementById("ruleUser").value = "";
+  document.getElementById("ruleUserSearch").value = "";
+  document.getElementById("ruleUserId").value = "";
   document.getElementById("rulePattern").value = "";
   document.getElementById("ruleAction").value = "block";
   document.getElementById("createRuleBtn").textContent = "Add Rule";
@@ -610,6 +670,7 @@ function renderSessions(data) {
   const tbody = document.querySelector("#sessionTable tbody");
   tbody.innerHTML = "";
   const users = data.users || {};
+  const devicesMap = data.devices || {};
   const sessions = data.sessions || {};
   const usage = data.usage || {};
   Object.values(sessions).forEach((s) => {
@@ -618,8 +679,15 @@ function renderSessions(data) {
     const us = usage[s.user_id] || { seconds: 0 };
     const tr = document.createElement("tr");
     const userName = user.name || s.user_id;
-    const devices = (user.device_ids || []).join(", ");
-    tr.innerHTML = `<td>${escape(userName)}</td><td>${escape(devices)}</td><td>${us.seconds || 0}</td><td>${(user.daily_budget_minutes || 0) * 60}</td>`;
+    const deviceNames = (user.device_ids || [])
+      .map((id) => {
+        const d = devicesMap[id] || {};
+        return d.name || d.hostname || d.ip || d.mac || id;
+      })
+      .filter(Boolean)
+      .join(", ");
+    const deviceLabel = deviceNames || "unassigned";
+    tr.innerHTML = `<td>${escape(userName)}</td><td>${escape(deviceLabel)}</td><td>${us.seconds || 0}</td><td>${(user.daily_budget_minutes || 0) * 60}</td>`;
     tbody.appendChild(tr);
   });
 }
